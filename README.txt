@@ -141,3 +141,6 @@ It's also been tested on a variety of other tools on
 Windows/Mac/Linux. More detailed compiling instructions
 and pre-compiled dependencies are available at:
 http://ufopaedia.org/index.php?title=Compiling_(OpenXcom)
+
+Brian test
+
