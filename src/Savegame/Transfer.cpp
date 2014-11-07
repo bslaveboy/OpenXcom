@@ -295,7 +295,7 @@ void Transfer::advance(Base *base)
 		{
 			base->getCrafts()->push_back(_craft);
 			_craft->setBase(base);
-			_craft->checkup();
+      _craft->setMaintenanceStatus();
 		}
 		else if (_itemQty != 0)
 		{

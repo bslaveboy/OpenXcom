@@ -21,6 +21,7 @@
 #include <cmath>
 #include <sstream>
 #include "../Engine/Language.h"
+#include "../Engine/Options.h"
 #include "../Ruleset/RuleCraft.h"
 #include "CraftWeapon.h"
 #include "../Ruleset/RuleCraftWeapon.h"
@@ -683,7 +684,7 @@ void Craft::think()
 	if (reachedDestination() && _dest == (Target*)_base)
 	{
 		setInterceptionOrder(0);
-		checkup();
+    setMaintenanceStatus();
 		setDestination(0);
 		setSpeed(0);
 		_lowFuel = false;
@@ -694,37 +695,47 @@ void Craft::think()
 
 /**
  * Checks the condition of all the craft's systems
- * to define its new status (eg. when arriving at base).
+ * to define its new maintenance status (eg. when arriving at base).
  */
-void Craft::checkup()
+void Craft::setMaintenanceStatus ()
 {
-	int available = 0, full = 0;
-	for (std::vector<CraftWeapon*>::iterator i = _weapons.begin(); i != _weapons.end(); ++i)
-	{
-		if ((*i) == 0)
-			continue;
-		available++;
-		if ((*i)->getAmmo() >= (*i)->getRules()->getAmmoMax())
-		{
-			full++;
-		}
-		else
-		{
-			(*i)->setRearming(true);
-		}
-	}
-
-	if (_damage > 0)
-	{
-		_status = "STR_REPAIRS";
-	}
-	else if (available != full)
-	{
-		_status = "STR_REARMING";
-	}
-	else
-	{
-		_status = "STR_REFUELLING";
+  if (Options::craftLaunchAlways)
+  {
+    if (calcRefuelTime() > 0)
+    {
+  		_status = "STR_REFUELLING";
+    }
+    else if (calcRearmTime() > 0)
+    {
+  		_status = "STR_REARMING";
+    }
+    else if (calcRepairTime() > 0)
+    {
+      _status = "STR_REPAIRS";
+    }
+    else
+    {
+  		_status = "STR_READY";
+    }
+  }
+  else
+  {
+    if (calcRepairTime() > 0)
+    {
+      _status = "STR_REPAIRS";
+    }
+    else if (calcRearmTime() > 0)
+    {
+  		_status = "STR_REARMING";
+    }
+    else if (calcRefuelTime() > 0)
+    {
+  		_status = "STR_REFUELLING";
+    }
+    else
+    {
+  		_status = "STR_READY";
+    }
 	}
 }
 
@@ -794,6 +805,7 @@ unsigned int Craft::calcRefuelTime()
 /**
  * Returns how long in hours until the 
  * craft is re-armed (if there is ammo available).
+ * Sets the rearm flag.
  */
 unsigned int Craft::calcRearmTime()
 {
@@ -810,10 +822,12 @@ unsigned int Craft::calcRearmTime()
       int needed = w->getRules()->getAmmoMax() - w->getAmmo();
 			if (clip.empty())
       { // We have unlimited ammo
+  			w->setRearming(true);
         rearmTime += (int)ceil((double)(needed) / w->getRules()->getRearmRate());
       }
       else if (available > 0)
       { // We have ammo
+  			w->setRearming(true);
         rearmTime += (int)ceil((double)(needed < available ? needed : available) / w->getRules()->getRearmRate());
       }
     }
@@ -831,7 +845,7 @@ void Craft::repair()
 	setDamage(_damage - _rules->getRepairRate());
 	if (_damage <= 0)
 	{
-		_status = "STR_REARMING";
+    setMaintenanceStatus();
 	}
 }
 
@@ -844,15 +858,7 @@ void Craft::refuel()
 	setFuel(_fuel + _rules->getRefuelRate());
 	if (_fuel >= _rules->getMaxFuel())
 	{
-		_status = "STR_READY";
-		for (std::vector<CraftWeapon*>::iterator i = _weapons.begin(); i != _weapons.end(); ++i)
-		{
-			if (*i && (*i)->isRearming())
-			{
-				_status = "STR_REARMING";
-				break;
-			}
-		}
+    setMaintenanceStatus();
 	}
 }
 
@@ -869,7 +875,7 @@ std::string Craft::rearm(Ruleset *rules)
 	{
 		if (i == _weapons.end())
 		{
-			_status = "STR_REFUELLING";
+      setMaintenanceStatus();
 			break;
 		}
 		if (*i != 0 && (*i)->isRearming())

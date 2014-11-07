@@ -139,15 +139,15 @@ public:
 	bool detect(Target *target) const;
 	/// Handles craft logic.
 	void think();
-	/// Does a craft full checkup.
-	void checkup();
+  /// Does a craft full checkup and sets it's maintenance status.
+  void setMaintenanceStatus ();
 	/// Consumes the craft's fuel.
 	void consumeFuel();
   /// Calculates the time to repair
   unsigned int calcRepairTime();
   /// Calculates the time to refuel
   unsigned int calcRefuelTime();
-  /// Calculates the time to rearm
+  /// Calculates the time to rearm and sets the rearm flag
   unsigned int calcRearmTime();
 	/// Repairs the craft.
 	void repair();
