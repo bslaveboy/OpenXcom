@@ -804,6 +804,7 @@ void InventoryState::invMouseOver(Action *)
 			}
 		}
 		std::wstring s;
+    BattleType itemType = item->getRules()->getBattleType();
 		if (item->getAmmoItem() != 0 && item->needsAmmo())
 		{
 			s = tr("STR_AMMO_ROUNDS_LEFT").arg(item->getAmmoItem()->getAmmoQuantity());
@@ -830,7 +831,15 @@ void InventoryState::invMouseOver(Action *)
 		{
 			s = tr("STR_AMMO_ROUNDS_LEFT").arg(item->getAmmoQuantity());
 		}
-		else if (item->getRules()->getBattleType() == BT_MEDIKIT)
+		else if (BT_GRENADE == itemType || BT_PROXIMITYGRENADE == itemType)
+    {
+    	BattleUnit *unit = _battleGame->getSelectedUnit();
+      int primeTUs = unit->getActionTUs(BA_PRIME, item);
+      int throwTUs = unit->getActionTUs(BA_THROW, item);
+      
+			s = tr("STR_GRENADE_TUS").arg(primeTUs).arg(throwTUs).arg(primeTUs + throwTUs);
+    }
+		else if (BT_MEDIKIT == itemType)
 		{
 			s = tr("STR_MEDI_KIT_QUANTITIES_LEFT").arg(item->getPainKillerQuantity()).arg(item->getStimulantQuantity()).arg(item->getHealQuantity());
 		}
