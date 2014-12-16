@@ -831,7 +831,7 @@ void InventoryState::invMouseOver(Action *)
 		{
 			s = tr("STR_AMMO_ROUNDS_LEFT").arg(item->getAmmoQuantity());
 		}
-		else if (BT_GRENADE == itemType || BT_PROXIMITYGRENADE == itemType)
+		else if (_tu && (BT_GRENADE == itemType || BT_PROXIMITYGRENADE == itemType))
     {
     	BattleUnit *unit = _battleGame->getSelectedUnit();
       int primeTUs = unit->getActionTUs(BA_PRIME, item);
